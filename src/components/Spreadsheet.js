@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTable } from 'react-table';
 
 const data = [
@@ -72,6 +72,8 @@ const columns = [
 ];
 
 const Spreadsheet = () => {
+  const [activeCell, setActiveCell] = useState([0, 0]);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -79,6 +81,28 @@ const Spreadsheet = () => {
     rows,
     prepareRow,
   } = useTable({ columns, data });
+
+  const handleKeyDown = (e) => {
+    if (!activeCell) return;
+    let [row, col] = activeCell;
+
+    if (e.key === 'ArrowDown') {
+      row = (row + 1) % rows.length;
+    } else if (e.key === 'ArrowUp') {
+      row = (row - 1 + rows.length) % rows.length;
+    } else if (e.key === 'ArrowRight') {
+      col = (col + 1) % columns.length;
+    } else if (e.key === 'ArrowLeft') {
+      col = (col - 1 + columns.length) % columns.length;
+    }
+
+    setActiveCell([row, col]);
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeCell]);
 
   return (
     <div className="overflow-auto border rounded shadow-sm text-sm bg-white">
@@ -105,18 +129,25 @@ const Spreadsheet = () => {
           })}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
+          {rows.map((row, rowIndex) => {
             prepareRow(row);
             const { key: rowKey, ...rowProps } = row.getRowProps();
             return (
               <tr key={rowKey} {...rowProps} className="border-t">
-                {row.cells.map((cell) => {
+                {row.cells.map((cell, colIndex) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
+                  const isActive =
+                    activeCell[0] === rowIndex && activeCell[1] === colIndex;
                   return (
                     <td
                       key={cellKey}
                       {...cellProps}
-                      className="px-4 py-2 border border-gray-200"
+                      className={`px-4 py-2 border border-gray-200 cursor-pointer ${
+                        isActive
+                          ? 'bg-yellow-100 ring-2 ring-yellow-400'
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => setActiveCell([rowIndex, colIndex])}
                     >
                       {cell.render('Cell')}
                     </td>
