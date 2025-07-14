@@ -56,7 +56,18 @@ const data = [
     priority: 'Low',
     dueDate: '30-01-2025',
     value: '2,800,000 ₹',
-  }
+  },
+   ...Array.from({ length: 25 }, () => ({
+    job: '',
+    submitted: '',
+    status: '',
+    submitter: '',
+    url: '',
+    assigned: '',
+    priority: '',
+    dueDate: '',
+    value: '',
+  })),
 ];
 
 const columns = [
