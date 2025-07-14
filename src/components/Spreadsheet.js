@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTable } from 'react-table';
-import "./Spreadsheet.css"
+import './Spreadsheet.css';
 
-const data = [
+const defaultRows = [
   {
     job: 'Launch social media campaign for product',
     submitted: '15-11-2024',
@@ -58,7 +58,7 @@ const data = [
     dueDate: '30-01-2025',
     value: '2,800,000 ₹',
   },
-   ...Array.from({ length: 25 }, () => ({
+  ...Array.from({ length: 25 }, () => ({
     job: '',
     submitted: '',
     status: '',
@@ -71,7 +71,7 @@ const data = [
   })),
 ];
 
-const columns = [
+const initialColumns = [
   { Header: 'Job Request', accessor: 'job' },
   { Header: 'Submitted', accessor: 'submitted' },
   { Header: 'Status', accessor: 'status' },
@@ -84,7 +84,43 @@ const columns = [
 ];
 
 const Spreadsheet = () => {
-  const [activeCell, setActiveCell] = useState([0, 0]);
+  const [columns, setColumns] = useState(initialColumns);
+  const [data, setData] = useState(defaultRows);
+  const [activeCell, setActiveCell] = useState(null);
+  const [editingCell, setEditingCell] = useState(null);
+
+  const handleAddColumn = () => {
+    const newAccessor = `custom_${columns.length}`;
+    const newColumn = { Header: `Column ${columns.length + 1}`, accessor: newAccessor };
+    const updatedColumns = [...columns, newColumn];
+    const updatedData = data.map((row) => ({ ...row, [newAccessor]: '' }));
+    setColumns(updatedColumns);
+    setData(updatedData);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!activeCell) return;
+    let [row, col] = activeCell;
+
+    if (e.key === 'ArrowDown') row = (row + 1) % data.length;
+    else if (e.key === 'ArrowUp') row = (row - 1 + data.length) % data.length;
+    else if (e.key === 'ArrowRight') col = (col + 1) % columns.length;
+    else if (e.key === 'ArrowLeft') col = (col - 1 + columns.length) % columns.length;
+
+    setActiveCell([row, col]);
+    setEditingCell(null);
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeCell, columns.length]);
+
+  const handleCellChange = (rowIndex, accessor, value) => {
+    const updated = [...data];
+    updated[rowIndex][accessor] = value;
+    setData(updated);
+  };
 
   const {
     getTableProps,
@@ -94,28 +130,6 @@ const Spreadsheet = () => {
     prepareRow,
   } = useTable({ columns, data });
 
-  const handleKeyDown = (e) => {
-    if (!activeCell) return;
-    let [row, col] = activeCell;
-
-    if (e.key === 'ArrowDown') {
-      row = (row + 1) % rows.length;
-    } else if (e.key === 'ArrowUp') {
-      row = (row - 1 + rows.length) % rows.length;
-    } else if (e.key === 'ArrowRight') {
-      col = (col + 1) % columns.length;
-    } else if (e.key === 'ArrowLeft') {
-      col = (col - 1 + columns.length) % columns.length;
-    }
-
-    setActiveCell([row, col]);
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeCell]);
-
   return (
     <div className="overflow-auto border rounded shadow-sm text-sm bg-white">
       <table {...getTableProps()} className="table-auto w-full border-collapse">
@@ -124,7 +138,7 @@ const Spreadsheet = () => {
             const { key, ...rest } = headerGroup.getHeaderGroupProps();
             return (
               <tr key={key} {...rest}>
-                {headerGroup.headers.map((column) => {
+                {headerGroup.headers.map((column, colIndex) => {
                   const { key: colKey, ...colProps } = column.getHeaderProps();
                   return (
                     <th
@@ -136,6 +150,14 @@ const Spreadsheet = () => {
                     </th>
                   );
                 })}
+
+                <th
+                  onClick={handleAddColumn}
+                  className="px-4 py-2 border-b text-left bg-gray-100 text-blue-600 font-bold cursor-pointer"
+                  style={{ minWidth: '80px' }}
+                >
+                  +
+                </th>
               </tr>
             );
           })}
@@ -149,7 +171,14 @@ const Spreadsheet = () => {
                 {row.cells.map((cell, colIndex) => {
                   const { key: cellKey, ...cellProps } = cell.getCellProps();
                   const isActive =
-                    activeCell[0] === rowIndex && activeCell[1] === colIndex;
+                    activeCell &&
+                    activeCell[0] === rowIndex &&
+                    activeCell[1] === colIndex;
+                  const isEditing =
+                    editingCell &&
+                    editingCell[0] === rowIndex &&
+                    editingCell[1] === colIndex;
+
                   return (
                     <td
                       key={cellKey}
@@ -159,12 +188,33 @@ const Spreadsheet = () => {
                           ? 'bg-yellow-100 ring-2 ring-yellow-400'
                           : 'hover:bg-gray-50'
                       }`}
-                      onClick={() => setActiveCell([rowIndex, colIndex])}
+                      onClick={() => {
+                        setActiveCell([rowIndex, colIndex]);
+                        setEditingCell([rowIndex, colIndex]);
+                      }}
                     >
-                      {cell.render('Cell')}
+                      {isEditing ? (
+                        <input
+                          className="w-full border rounded px-1 py-0.5"
+                          autoFocus
+                          value={cell.value || ''}
+                          onChange={(e) =>
+                            handleCellChange(rowIndex, cell.column.id, e.target.value)
+                          }
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === 'Escape') {
+                              setEditingCell(null);
+                            }
+                          }}
+                        />
+                      ) : (
+                        cell.render('Cell')
+                      )}
                     </td>
                   );
                 })}
+                <td className="border border-gray-200"></td> 
               </tr>
             );
           })}

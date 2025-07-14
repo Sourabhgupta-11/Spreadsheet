@@ -1,69 +1,59 @@
-/* Spreadsheet.css */
-
-/* Zebra striping for rows */
 tbody tr:nth-child(even) {
-  background-color: #f9fafb; /* Tailwind's gray-50 */
+  background-color: #f9fafb;
 }
 
-/* Smooth transitions on hover/focus */
 td,
 th {
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Highlight active cell */
 td:focus-within,
 td:focus {
   outline: none;
-  box-shadow: inset 0 0 0 2px #facc15; /* Tailwind yellow-400 */
+  box-shadow: inset 0 0 0 2px #facc15;
 }
 
-/* Sticky headers with slight shadow */
 thead th {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
+  background-color: #f3f4f6;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
-/* Add subtle border on entire table */
 table {
   border-collapse: collapse;
   width: 100%;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
-/* Column group styling (used via Tailwind in JSX but fallback here) */
 th.bg-green-100,
 td.bg-green-100 {
-  background-color: #d1fae5; /* Tailwind green-100 */
+  background-color: #d1fae5;
 }
 
 th.bg-purple-100,
 td.bg-purple-100 {
-  background-color: #e9d5ff; /* Tailwind purple-100 */
+  background-color: #e9d5ff;
 }
 
 th.bg-orange-100,
 td.bg-orange-100 {
-  background-color: #ffedd5; /* Tailwind orange-100 */
+  background-color: #ffedd5;
 }
 
-/* Better spacing for empty cells */
 td:empty::before {
-  content: '—';
-  color: #9ca3af; /* Tailwind gray-400 */
+  content: "—";
+  color: #9ca3af;
   font-style: italic;
 }
 
-/* Cursor for resizable in future (optional prep) */
 th.resizable {
   position: relative;
 }
 
 th.resizable::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 0;
   top: 0;
@@ -71,3 +61,5 @@ th.resizable::after {
   height: 100%;
   cursor: col-resize;
 }
+
+
