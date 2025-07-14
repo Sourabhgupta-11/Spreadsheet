@@ -62,4 +62,34 @@ th.resizable::after {
   cursor: col-resize;
 }
 
+.resizer {
+  display: inline-block;
+  background: #e5e7eb; 
+  width: 4px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateX(50%);
+  z-index: 1;
+  touch-action: none;
+}
 
+.resizer:hover,
+.resizer:active {
+  background: #a3a3a3; 
+}
+
+input[type="text"] {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+input[type="text"]:focus {
+  border-color: #facc15; 
+  box-shadow: 0 0 0 2px #fde68a;
+}
