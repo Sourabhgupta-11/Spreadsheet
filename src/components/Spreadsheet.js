@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTable } from 'react-table';
+import "./Spreadsheet.css"
 
 const data = [
   {
